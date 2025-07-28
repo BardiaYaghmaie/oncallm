@@ -13,3 +13,4 @@ pydantic
 python-dotenv
 openai
 pytest
+langchain-google-genai

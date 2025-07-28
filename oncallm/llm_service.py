@@ -4,6 +4,7 @@ import logging
 from datetime import datetime
 from langchain.agents import Tool
 from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 from oncallm.kubernetes_service import KubernetesService
 from oncallm.prompt import get_system_prompt
 from langchain.prompts import ChatPromptTemplate
@@ -17,7 +18,12 @@ logger = logging.getLogger(__name__)
 class OncallmAgent:
 
     def __init__(self):
-        """Set up the agent with tools and prompts."""
+        """Set up the agent with tools and prompts.
+        
+        LLM provider is selected via the LLM_PROVIDER environment variable:
+        - 'openai' (default): Uses OpenAI-compatible models (ChatOpenAI)
+        - 'gemini': Uses Google Gemini models (ChatGoogleGenerativeAI)
+        """
         # Instantiate your KubernetesService (adjust kubeconfig_path if needed)
         k8s_service = KubernetesService()  # or provide path if needed
         # Langfuse ≥3.0: credentials are configured via environment variables
@@ -67,12 +73,22 @@ class OncallmAgent:
             ),
         ]
 
-        self.llm = ChatOpenAI(
-            model=os.getenv("LLM_MODEL", "gpt-4.1"),
-            temperature=0.4,
-            openai_api_base=os.getenv("LLM_API_BASE"),
-            max_tokens=1024,
-        )
+        llm_provider = os.getenv("LLM_PROVIDER", "openai").lower()
+        if llm_provider == "gemini":
+            # Gemini (Google Generative AI) integration
+            self.llm = ChatGoogleGenerativeAI(
+                model=os.getenv("LLM_MODEL", "gemini-2.0-flash"),
+                temperature=0.4,
+                max_tokens=1024,
+            )
+        else:
+            # Default: OpenAI
+            self.llm = ChatOpenAI(
+                model=os.getenv("LLM_MODEL", "gpt-4.1"),
+                temperature=0.4,
+                openai_api_base=os.getenv("LLM_API_BASE"),
+                max_tokens=1024,
+            )
 
         system_prompt = get_system_prompt(tools)
 

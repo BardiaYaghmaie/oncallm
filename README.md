@@ -25,7 +25,7 @@ This application provides an API that can:
 
 - Python 3.8+
 - Access to a Kubernetes cluster (the agent will use the standard kubeconfig resolution, e.g., `~/.kube/config` or in-cluster service account).
-- OpenAI API key (or other compatible LLM provider configured in `oncallm/llm_service.py`).
+- OpenAI API key or Google Gemini API key (configurable via environment variables; see below).
 - [Docker](https://docs.docker.com/get-docker/) installed and running.
 - [Kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation) installed.
 - [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) installed and configured.
@@ -58,9 +58,16 @@ This application provides an API that can:
     # KUBECONFIG_PATH=/path/to/your/kubeconfig
 
     # LLM settings
+    # LLM provider selection: 'openai' (default) or 'gemini'
+    LLM_PROVIDER=openai
+    # For OpenAI
     OPENAI_API_KEY=your_openai_api_key
-    LLM_MODEL=gpt-4-turbo # Or your preferred model
+    LLM_MODEL=gpt-4-turbo # Or your preferred OpenAI model
     # LLM_API_BASE=your_llm_api_base_if_not_openai_default # Optional, for self-hosted or proxy
+    # For Gemini (Google Generative AI)
+    # LLM_PROVIDER=gemini
+    # GOOGLE_API_KEY=your_google_gemini_api_key
+    # LLM_MODEL=gemini-2.0-flash # Or your preferred Gemini model
 
     # Langfuse Observability (Optional)
     # LANGFUSE_PUBLIC_KEY=pk-lf-...

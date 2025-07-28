@@ -76,27 +76,45 @@ async def llm_health(
     
     Args:
         llm_service: LLM service
-        
+    
     Returns:
         Health status of the LLM API connection
     """
     try:
-        # Check if the OpenAI API key is set in environment variables
+        llm_provider = os.environ.get("LLM_PROVIDER", "openai").lower()
         openai_api_key = os.environ.get("OPENAI_API_KEY")
-        if openai_api_key:
-            # Get model information from the LLM instance
-            model_name = getattr(llm_service.llm, 'model_name', 'unknown')
-            return {
-                "status": "healthy",
-                "model": model_name,
-                "api_configured": True
-            }
+        gemini_api_key = os.environ.get("GOOGLE_API_KEY")
+        model_name = getattr(llm_service.llm, 'model_name', 'unknown')
+        if llm_provider == "gemini":
+            if gemini_api_key:
+                return {
+                    "status": "healthy",
+                    "provider": "gemini",
+                    "model": model_name,
+                    "api_configured": True
+                }
+            else:
+                return {
+                    "status": "unhealthy",
+                    "provider": "gemini",
+                    "error": "No GOOGLE_API_KEY configured",
+                    "api_configured": False
+                }
         else:
-            return {
-                "status": "unhealthy",
-                "error": "No OpenAI API key configured",
-                "api_configured": False
-            }
+            if openai_api_key:
+                return {
+                    "status": "healthy",
+                    "provider": "openai",
+                    "model": model_name,
+                    "api_configured": True
+                }
+            else:
+                return {
+                    "status": "unhealthy",
+                    "provider": "openai",
+                    "error": "No OPENAI_API_KEY configured",
+                    "api_configured": False
+                }
     except Exception as e:
         logger.error(f"Error checking LLM API health: {e}")
         return {
